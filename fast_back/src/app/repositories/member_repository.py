@@ -190,7 +190,6 @@ class MemberRepository:
         # # 1) 직접 작성
         # result = await self.db.execute(UPDATE_MEMBER_QUERY, {
         #     "id": id,
-        #     "member_password": member.member_password,
         #     "member_name": member.member_name,
         #     "member_age": member.member_age
         # })
@@ -201,9 +200,26 @@ class MemberRepository:
         # 2) Core
         new_date = {
             "id": id,
-            "member_password": member.member_password,
             "member_name": member.member_name,
             "member_age": member.member_age
+        }
+
+        query = (
+            update(Member)
+            .where(Member.id == id)
+            .values(**new_date)
+        )
+
+        result = await self.db.execute(query)
+        await self.db.commit()
+        return result.rowcount() > 0
+    
+
+     # 회원 비밀번호 변경
+    async def update_password(self, id: int, member_password: str) -> bool:
+        new_date = {
+            "id": id,
+            "member_password": member_password,
             }
 
         query = (
@@ -215,6 +231,7 @@ class MemberRepository:
         result = await self.db.execute(query)
         await self.db.commit()
         return result.rowcount() > 0
+
 
     # 회원 썸네일 변경(S3)
     # 회원 탈퇴
@@ -238,5 +255,4 @@ class MemberRepository:
 
 # 주입 팩토리 메서드
 def get_member_repository(db: AsyncSession = Depends(get_oracle_db)):
-
     return MemberRepository(db)
