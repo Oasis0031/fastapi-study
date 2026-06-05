@@ -47,13 +47,41 @@ class AuthService:
         return tokens
 
     # 소셜 로그인 
+    async def social_login(self, login_request_dto: LoginRequestDTO):
+
+        # 1) 회원 조회
+        member_in_db = await self.member_service.get_member_for_login(
+            login_request_dto.member_email,
+            login_request_dto.member_provider
+        )
+        
+        # 3) payload 제작
+        claims = MemberClaimsDTO(
+            id=member_in_db.id,
+            member_email=member_in_db.member_email,
+            member_provider=member_in_db.member_provider
+        )
+
+        # 4) 토큰 제작
+        access_token = generate_access_token(claims)
+        refresh_token = generate_refresh_token(claims)
+
+        tokens = JwtTokenDTO(
+            access_token=access_token,
+            refresh_token=refresh_token
+        )
+
+        # 5) redis refresh 등록
+        await self.redis_service.save_refresh_token(member_in_db.id, refresh_token)
+        return tokens
+
+
     # 로그아웃
-    async def logout(self, member_id: int, access_token: str) -> None:
+    async def logout(self,access_token,member_id):
         await self.redis_service.delete_refresh_token(member_id)
-        
         await self.redis_service.save_blacklisted_token(access_token)
-        
-    
+
+
     # refresh token -> access token 재발급
 
 

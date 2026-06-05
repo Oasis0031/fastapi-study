@@ -34,10 +34,5 @@ async def get_oracle_db():
         try:
             yield db
 
-
-
-
-
-            
         finally:
             await db.close()

@@ -2,7 +2,7 @@ from fastapi import Depends, HTTPException
 from app.utils.security_util import get_password_hash
 from app.repositories.member_repository import MemberRepository, get_member_repository
 from app.schemas.member_schema import (
-    MemberCreateDTO, SocialMemberCreateDTO, MemberUpdateDTO, MemberClaimsDTO, MemberResponseDTO, MemberVO
+    MemberCreateDTO, SocialMemberCreateDTO, MemberUpdateDTO, MemberClaimsDTO, MemberResponseDTO
 )
 
 # 1. 트랜잭션 관리
@@ -65,8 +65,8 @@ class MemberService:
         return MemberResponseDTO.model_validate(found_member)
 
 
-    # 로그인 전용 조회 (비밀번호 포함)
-    async def get_member_with_password(self, member_email: str, member_provider: str) -> MemberVO:
+    # 회원 정보 조회(member_email, member_provider)
+    async def get_member_for_login(self, member_email: str, member_provider: str):
         found_member = await self.repo.find_member_by_email_and_provider(member_email, member_provider)
 
         if not found_member:
@@ -75,7 +75,8 @@ class MemberService:
                 detail="회원을 찾을 수 없습니다"
             )
 
-        return MemberVO.model_validate(found_member)
+        # ORM Member -> MemberResponseDTO
+        return found_member
 
     # 회원 정보 조회(member_email, member_provider)
     async def get_member_by_email_and_provider(self, member_email: str, member_provider: str):

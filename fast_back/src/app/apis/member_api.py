@@ -1,9 +1,8 @@
 from fastapi import APIRouter, Depends, Query
-from app.schemas.member_schema import MemberCreateDTO, MemberUpdateDTO
+from app.schemas.member_schema import MemberCreateDTO, MemberUpdateDTO, MemberClaimsDTO
 from app.schemas.common_schema import ApiResponseDTO
 from app.enums.member_enum import MemberProvider
 from app.services.member_service import get_member_service, MemberService
-
 
 router = APIRouter()
 
@@ -35,93 +34,107 @@ async def join(
 
     return ApiResponseDTO(
         success=True,
+        message="회원가입 성공",
         data=member_claim
     )
-    
-    # 회원 단일 조회(member_email, member_provider)
-@router.get("/search", summary="회원 단일 조회(email+provider)", response_model=ApiResponseDTO)
-async def findByEmailAndProvider(
+
+# 회원 단일 조회(id)
+@router.get(
+    "/{id}",
+    response_model=ApiResponseDTO,
+    summary="회원 정보 조회(id)"
+)
+async def get_member_by_id(id: int, member_service: MemberService = Depends(get_member_service)):
+    found_member = await member_service.get_member_by_id(id)
+
+    return ApiResponseDTO(
+        success=True,
+        message="회원 조회 성공",
+        data=found_member
+    )
+
+# 회원 단일 조회(member_email, member_provider)
+# Query(...): 필수 값
+@router.get(
+    "/",
+    summary="회원 정보 조회(member_email, member_provider)",
+    response_model=ApiResponseDTO
+)
+async def get_member_by_email_and_provider(
     member_email: str = Query(...),
     member_provider: str = Query(...),
     member_service: MemberService = Depends(get_member_service)
 ):
-    member_claim = await member_service.get_member_by_email_and_provider(member_email, member_provider)
+    found_member = await member_service.get_member_by_email_and_provider(member_email, member_provider)
 
     return ApiResponseDTO(
         success=True,
-        data=member_claim
+        message="회원 조회 성공",
+        data=found_member
     )
 
-    # 회원 단일 조회(전체 조회)
-@router.get("/all", summary="회원 전체 조회", response_model=ApiResponseDTO)
-async def findAll(
-    member_service: MemberService = Depends(get_member_service)
-):
-    member_claim = await member_service.get_members()
-    
-    return ApiResponseDTO(
-        success=True,
-        data=member_claim
-    )
-    
-    # 회원 단일 조회(id)
-@router.get("/{id}", summary="회원 단일 조회(id)", response_model=ApiResponseDTO)
-async def findById(
-    id: int,
-    member_service: MemberService = Depends(get_member_service)
-):
-    member_claim = await member_service.get_member_by_id(id)
+# 회원 전체 조회
+@router.get(
+    "",
+    summary="회원 전체 정보 조회",
+    response_model=ApiResponseDTO
+)
+async def get_members(member_server: MemberService = Depends(get_member_service)):
+
+    members = await member_server.get_members()
 
     return ApiResponseDTO(
         success=True,
-        data=member_claim
+        message="회원 전체 정보 조회 성공",
+        data=members
     )
-    
-    # 회원 정보 수정
+
+# 회원 정보 수정
 @router.put(
     "/{id}",
     summary="회원 정보 수정",
     response_model=ApiResponseDTO
 )
 async def update_member(
-   id: int, member: MemberUpdateDTO, member_service: MemberService = Depends(get_member_service)
+    id: int, member: MemberUpdateDTO, member_service: MemberService = Depends(get_member_service)
 ):
     await member_service.update_member(id, member)
 
     return ApiResponseDTO(
         success=True,
-        data=None
+        message="회원 정보 수정 완료"
     )
 
-    # 회원 비밀번호 수정
+
+# 회원 비밀번호 수정
 @router.put(
     "/update-password/{id}",
     summary="비밀번호 변경",
     response_model=ApiResponseDTO
-)  
+)
 async def update_password(
     id: int, new_password: str, member_service:MemberService = Depends(get_member_service)
 ):
     await member_service.update_password(id, new_password)
-    
+
     return ApiResponseDTO(
         success=True,
-        data=None
+        message="비밀번호 변경 완료"
     )
-    
-    # 회원 정보 탈퇴
+
+
+# 회원 정보 탈퇴
 @router.delete(
     "/{id}",
     summary="회원 탈퇴",
     response_model=ApiResponseDTO
 )
-async def withdraw(id: int, member_service: MemberService = Depends(get_member_service)):
+async def withdraw(id: int, member_service:MemberService = Depends(get_member_service)):
     await member_service.withdraw(id)
-    
+
     return ApiResponseDTO(
         success=True,
-        data=None
+        message="회원 탈퇴 완료"
     )
-    
-    # 토큰 -> 회원정보 조회
-    
+
+# 토큰 -> 회원 정보 조회

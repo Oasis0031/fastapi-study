@@ -1,7 +1,9 @@
 from pydantic import BaseModel
 from typing import Generic, TypeVar
-T = TypeVar('T')
+
+T = TypeVar("T")
 
 class ApiResponseDTO(BaseModel, Generic[T]):
     success: bool
-    data: T | None = None   #Optional
+    message: str
+    data: T | None = None #Optional
