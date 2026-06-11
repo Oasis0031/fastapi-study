@@ -9,6 +9,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from app.models.post_model import Post
 
+KST = timezone(timedelta(hours=9))
+
 # 1개 테이블 == 1개 클래스
 class Member(Base):
     __tablename__ = "TBL_MEMBER"

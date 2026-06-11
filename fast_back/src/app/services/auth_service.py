@@ -1,7 +1,7 @@
 from fastapi import Depends, HTTPException, status
 from app.services.member_service import get_member_service, MemberService
 from redis.asyncio import Redis
-from app.services.redis_service import get_redis_service, RedisServcie
+from app.services.redis_service import get_redis_service, RedisService
 from app.utils.security_util import verify_password
 from app.utils.jwt_token_util import (
     parse_token, reissue_access_token, generate_access_token, generate_refresh_token
@@ -99,6 +99,6 @@ class AuthService:
 
 def get_auth_service(
         member_service: MemberService = Depends(get_member_service),
-        redis_service: RedisServcie = Depends(get_redis_service)
+        redis_service: RedisService = Depends(get_redis_service)
 ):
     return AuthService(member_service, redis_service)

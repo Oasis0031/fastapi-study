@@ -26,7 +26,7 @@ redis_client = redis.Redis(
 # 기존에 사용했던 startup, shutdown 방법보다
 # lifespan 새로운 권장방식
 @asynccontextmanager
-async def start_redis_client(app: FastAPI):
+async def init_redis_client(app: FastAPI):
     try:
         # Redis 연결
         app.state.redis = redis_client

@@ -1,3 +1,15 @@
+import os
+import sys
+
+# docling path 오류 해결코드 시작할 때 자동으로 import
+docling_parse_path = os.path.join(sys.prefix, "Lib", "site-packages", "docling_parse")
+os.add_dll_directory(docling_parse_path)
+
+# hugging face 권한 설정
+os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
+os.environ["HF_HUB_DISABLE_SYMLINKS"] = "1"
+os.environ["HUGGINGFACE_HUB_CACHE"] = "C:/hf_cache"
+
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from app.infrastructure.postgresql import engine, Base
@@ -7,7 +19,7 @@ from app.security.cors import setup_cors
 from app.security.security_headers import setup_security
 
 import app.models
-from app.apis import langchain_api, openai_api, rag_api, s3_test_api
+from app.apis import langchain_api, openai_api, rag_api
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -37,4 +49,3 @@ setup_security(app)
 app.include_router(openai_api.router, prefix="/llms", tags=["llms"])
 app.include_router(langchain_api.router, prefix="/langchains", tags=["langchains"])
 app.include_router(rag_api.router, prefix="/rags", tags=["rags"])
-app.include_router(s3_test_api.router, prefix="/s3-test", tags=["s3-test"])
